@@ -21,8 +21,7 @@ SOURCES += main.cpp\
     ../../libs/plot.cpp \
     ../../libs/worker.cpp \
     ../../libs/qcustomplot.cpp \
-    ../../libs/KeCOM.cpp \
-    abc.cpp
+    ../../libs/KeCOM.cpp
 
 HEADERS  += mainwindow.h \
     ftd2xx.h \
@@ -33,8 +32,7 @@ HEADERS  += mainwindow.h \
     ../../libs/plot.h \
     ../../libs/worker.h \
     ../../libs/qcustomplot.h \
-    ../../libs/KeCOM.h \
-    abc.h
+    ../../libs/KeCOM.h
 
 
 FORMS    += mainwindow.ui \
