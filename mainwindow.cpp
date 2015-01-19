@@ -12,23 +12,23 @@
 #include <QThread>
 
 //Project specific
-#include "../../libs/geniobase.h"
-#include "../../libs/ftdi.h"
-#include "../../libs/func.h"
-#include "../../libs/config.h"
-#include "../../libs/plot.h"
-#include "../../libs/worker.h"
-#include "../../libs/KeCOM.h"
+#include "libs/geniobase.h"
+#include "libs/ftdi.h"
+#include "libs/func.h"
+#include "libs/config.h"
+#include "libs/plot.h"
+#include "libs/worker.h"
+#include "libs/KeCOM.h"
 
 //QCustomPlot
-#include "../../libs/qcustomplot.h"
+#include "libs/qcustomplot.h"
 
 //QSerialExtPort
 /* To use QExtSerialPort, add the following line to your project file (*.pro)
  * include(pathToPri/qextserialport.pri)
  */
-#include "../../qextserialport-1.2rc/src/qextserialport.h"
-#include "../../qextserialport-1.2rc/src/qextserialenumerator.h"
+#include "qextserialport-1.2rc/src/qextserialport.h"
+#include "qextserialport-1.2rc/src/qextserialenumerator.h"
 
 #if defined(__linux__)
 
