@@ -6,16 +6,16 @@
 #include <sstream>
 
 //My
-#include "../../libs/ftdi.h"
-#include "../../libs/geniobase.h"
-#include "../../libs/func.h"
-#include "../../libs/config.h"
+#include "libs/ftdi.h"
+#include "libs/geniobase.h"
+#include "libs/func.h"
+#include "libs/config.h"
 
 // QCustomPlot
-#include "../../libs/qcustomplot.h"
+#include "libs/qcustomplot.h"
 
 //QSerialExtPort
-#include "../../qextserialport-1.2rc/src/qextserialport.h"
+#include "qextserialport-1.2rc/src/qextserialport.h"
 
 #if defined(__linux__)
 //#include <TQtWidget.h>
