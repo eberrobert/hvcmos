@@ -18,7 +18,7 @@ Worker::Worker()
 
 }
 
-Worker::Worker(GenioBase *genio, QextSerialPort* kecom, globalconfig gconf, pixelconfig H35pixel, PCBconfig pcbconf)
+Worker::Worker(GenioBase* genio, QextSerialPort* kecom, globalconfig gconf, pixelconfig H35pixel, PCBconfig* pcbconf)
 {
     this->stop = false;
     this->genio = genio;
@@ -54,7 +54,7 @@ void Worker::DoSCurve1(int pixel, double startvoltage, double th1, double th2)
     pixelstring << "Pixel " << pixel;
     emit NewPlotCurve(QString::fromStdString(pixelstring.str()));
 
-    double step = 0.01;
+    double step = 0.001;
     for(double inj=startvoltage; inj > 0; inj -= step)
     {
         // Settings
@@ -406,6 +406,8 @@ void Worker::SetDigPixClockdiv(int div)
 
 void Worker::FindLowestTh1(int pixel)
 {
+    //std::cout << "Worker: Injection Value: " << pcbconf->GetInj() << "\n";
+
     gconf.ABEn = true;
     gconf.CompOffB = true;
     gconf.CompOffNorm = false;
@@ -423,10 +425,12 @@ void Worker::FindLowestTh1(int pixel)
     double ThStep = 0.01;
     int Iterations = 0;
     int MaxIterations = 200;
-    double Threshold = 1.90;
+    //double Threshold = 1.90;
+    double Threshold = 2.00;
     double bestTh = 0.0;
     bool notfound = true;
     bool follower = false;
+    int k;
     InitPatternHitbus(Injections);
 
             while (notfound)
@@ -434,7 +438,7 @@ void Worker::FindLowestTh1(int pixel)
                 Iterations++;
                 if (Iterations == MaxIterations)
                     notfound = false;
-                Set3DACs(Threshold, pcbconf.GetTh2(), pcbconf.GetInj());
+                Set3DACs(Threshold, pcbconf->GetTh2(), pcbconf->GetInj());
                 LoadDACPCB();
                 Threshold = Threshold + ThStep;
                 InitCounter();
@@ -451,8 +455,7 @@ void Worker::FindLowestTh1(int pixel)
                     {
                         Threshold = Threshold - 0.2;
                         ThStep = 0.01;
-                    }
-                    else if (ThStep == 0.01)
+                    }else if (ThStep == 0.01)
                     {
                         Threshold = Threshold - 0.02;
                         ThStep = 0.001;
@@ -470,8 +473,32 @@ void Worker::FindLowestTh1(int pixel)
                 //counterstate1 << ReadCounterState();
                 //counterstate2 << Threshold;
                 //logit("Threshold: " + counterstate2.str() + " Counter: " + counterstate1.str());
-                std::cout << "Threshold :" << Threshold << " Counter :" << ReadCounterState() << std::endl;
+                std::cout << "Threshold :" << Threshold << " Counter :" << counterstate << std::endl;
             }
+            Threshold = bestTh;
+            notfound = true;
+            while (notfound)
+            {
+                counterstate = 0;
+                for (k = 0; k<10; k++)
+                {
+                    Set3DACs(Threshold, pcbconf->GetTh2(), pcbconf->GetInj());
+                    LoadDACPCB();
+                    InitCounter();
+                    StartPattern();
+                    SendBuffer();
+                    sleep(50);
+                    counterstate = counterstate + ReadCounterState();
+                }
+                if (counterstate == 1280)
+                {
+                    notfound = false;
+                    bestTh = Threshold;
+                }
+                else
+                    Threshold = Threshold + 0.001;
+            }
+
     std::stringstream counterstate1;
     counterstate1 << bestTh;
     QString blabla = "Best Treshold found: " + QString::fromStdString(counterstate1.str());

@@ -19,7 +19,7 @@ class Worker : public QObject, public Funkcije, public Ke6485
     Q_OBJECT
     public:
         Worker();
-        Worker(GenioBase* genio, QextSerialPort* kecom, globalconfig gconf, pixelconfig H35pixel, PCBconfig pcbconf);
+        Worker(GenioBase* genio, QextSerialPort* kecom, globalconfig gconf, pixelconfig H35pixel, PCBconfig* pcbconf);
         ~Worker();
     public slots:
 
@@ -207,7 +207,7 @@ class Worker : public QObject, public Funkcije, public Ke6485
         void readCOMData(int readings);
         pixelconfig H35pixel;
         globalconfig gconf;
-        PCBconfig pcbconf;
+        PCBconfig* pcbconf;
         GenioBase* genio;
         QextSerialPort* kecom;
         bool stop;

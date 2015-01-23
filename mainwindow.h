@@ -211,6 +211,8 @@ private slots:
 
     void on_FastClockDiv_valueChanged(int arg1);
 
+    void on_AutoDelay_clicked();
+
 public slots:
     void HandleResults(double x, double y);
     void UpdateSCurveProgress(int value);
