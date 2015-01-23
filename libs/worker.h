@@ -27,7 +27,7 @@ class Worker : public QObject, public Funkcije, public Ke6485
          * @brief FindLowestTh1 Ramps up or down Th1 in order to find the lowest possible threshold not in noise.
          * @param pixel is the pixel where to perform the action.
          */
-        void FindLowestTh1(int pixel);
+        void FindLowestTh1(int pixel, bool spare);
 
         /**
          * @brief SetDigPixClockdiv Sets the clock divider for the fast readout clock. The slow clock is 8 times slower.

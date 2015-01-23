@@ -252,7 +252,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this, SIGNAL(EnableDigitalClock(bool)), worker, SLOT(EnableDigitalClock(bool)));
     connect(this, SIGNAL(SetDigPixDelay(int)), worker, SLOT(SetDigPixDelay(int)));
     connect(this, SIGNAL(SetDigPixClockDiv(int)), worker, SLOT(SetDigPixClockdiv(int)));
-    connect(this, SIGNAL(FindLowestTh1(int)), worker, SLOT(FindLowestTh1(int)));
+    connect(this, SIGNAL(FindLowestTh1(int, bool)), worker, SLOT(FindLowestTh1(int, bool)));
     connect(worker, SIGNAL(Logit(QString)), this, SLOT(Logit(QString)));
 
     thread->start();
@@ -1631,7 +1631,7 @@ void MainWindow::on_FindlowestTh1_clicked()
 {
     // Implement function from Felix Ehrler here.
     int pixel = ui->TunePixSpin->value();
-    emit FindLowestTh1(pixel);
+    emit FindLowestTh1(pixel, gconf.GetSpare(1));
     std::stringstream logger;
     logger << "Ramping to lowest threshold for pixel " << pixel;
     logit(logger.str());
