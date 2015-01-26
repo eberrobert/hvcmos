@@ -243,7 +243,7 @@ signals:
     void EnableDigitalClock(bool enable);
     void SetDigPixClockDiv(int div);
     void SetDigPixDelay(int delay);
-    void FindLowestTh1(int pixel);
+    void FindLowestTh1(int pixel, bool flagSpare1);
 
 
 private:

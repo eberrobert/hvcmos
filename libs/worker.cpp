@@ -404,7 +404,7 @@ void Worker::SetDigPixClockdiv(int div)
             std::cout << "changed clockdiv" << std::endl;
 }
 
-void Worker::FindLowestTh1(int pixel)
+void Worker::FindLowestTh1(int pixel,bool flagSpare1)
 {
     //std::cout << "Worker: Injection Value: " << pcbconf->GetInj() << "\n";
 
@@ -412,6 +412,9 @@ void Worker::FindLowestTh1(int pixel)
     gconf.CompOffB = true;
     gconf.CompOffNorm = false;
     gconf.EnLowPass = true;
+    // Set TDAC
+    gconf.SetSpare(1, flagSpare1);
+
     H35pixel.SetAnaInj(false);
     H35pixel.SetDigInjEn(false);
     H35pixel.SetHBEn(false);
@@ -433,75 +436,88 @@ void Worker::FindLowestTh1(int pixel)
     int k;
     InitPatternHitbus(Injections);
 
-            while (notfound)
+    while (notfound)
+    {
+        Iterations++;
+        if (Iterations == MaxIterations)
+            break;
+
+        Set3DACs(Threshold, pcbconf->GetTh2(), pcbconf->GetInj());
+        LoadDACPCB();
+        Threshold = Threshold + ThStep;
+        InitCounter();
+        StartPattern();
+        SendBuffer();
+        sleep(50);
+        counterstate = ReadCounterState();
+        if (counterstate <= Injections)
+        {
+            if (follower)
             {
-                Iterations++;
-                if (Iterations == MaxIterations)
+
+                follower = false;
+                if (ThStep == 0.1)
+                {
+                    Threshold = Threshold - 0.2;
+                    ThStep = 0.01;
+                }else if (ThStep == 0.01)
+                {
+                    Threshold = Threshold - 0.02;
+                    ThStep = 0.001;
+                }else if (counterstate == Injections)
+                {
+                    bestTh = Threshold - ThStep;
                     notfound = false;
+                }
+
+            } else
+                follower = true;
+
+        }
+        //std::stringstream counterstate1;
+        //std::stringstream counterstate2;
+        //counterstate1 << ReadCounterState();
+        //counterstate2 << Threshold;
+        //logit("Threshold: " + counterstate2.str() + " Counter: " + counterstate1.str());
+        std::cout << "Threshold :" << Threshold << " Counter :" << counterstate << std::endl;
+    }
+    Threshold = bestTh;
+
+    if(!notfound)
+    {
+        notfound = true;
+        while (notfound)
+        {
+            counterstate = 0;
+            for (k = 0; k<10; k++)
+            {
                 Set3DACs(Threshold, pcbconf->GetTh2(), pcbconf->GetInj());
                 LoadDACPCB();
-                Threshold = Threshold + ThStep;
                 InitCounter();
                 StartPattern();
                 SendBuffer();
                 sleep(50);
-                counterstate = ReadCounterState();
-                if (counterstate <= Injections)
-                {
-                    if (follower)
-                    {
-                        follower = false;
-                    if (ThStep == 0.1)
-                    {
-                        Threshold = Threshold - 0.2;
-                        ThStep = 0.01;
-                    }else if (ThStep == 0.01)
-                    {
-                        Threshold = Threshold - 0.02;
-                        ThStep = 0.001;
-                    }else if (counterstate == Injections)
-                    {
-                        bestTh = Threshold - ThStep;
-                        notfound = false;
-                    }
-                    } else
-                        follower = true;
-
-                }
-                //std::stringstream counterstate1;
-                //std::stringstream counterstate2;
-                //counterstate1 << ReadCounterState();
-                //counterstate2 << Threshold;
-                //logit("Threshold: " + counterstate2.str() + " Counter: " + counterstate1.str());
-                std::cout << "Threshold :" << Threshold << " Counter :" << counterstate << std::endl;
+                counterstate = counterstate + ReadCounterState();
             }
-            Threshold = bestTh;
-            notfound = true;
-            while (notfound)
+            if (counterstate == 1280)
             {
-                counterstate = 0;
-                for (k = 0; k<10; k++)
-                {
-                    Set3DACs(Threshold, pcbconf->GetTh2(), pcbconf->GetInj());
-                    LoadDACPCB();
-                    InitCounter();
-                    StartPattern();
-                    SendBuffer();
-                    sleep(50);
-                    counterstate = counterstate + ReadCounterState();
-                }
-                if (counterstate == 1280)
-                {
-                    notfound = false;
-                    bestTh = Threshold;
-                }
-                else
-                    Threshold = Threshold + 0.001;
+                notfound = false;
+                bestTh = Threshold;
             }
+            else
+                Threshold = Threshold + 0.001;
+        }
+    }
 
     std::stringstream counterstate1;
     counterstate1 << bestTh;
-    QString blabla = "Best Treshold found: " + QString::fromStdString(counterstate1.str());
+    QString blabla;
+
+    if(notfound)
+        blabla = "No Threshold found!";
+    else
+        blabla = "Best Threshold found: " + QString::fromStdString(counterstate1.str());
+
     emit Logit(blabla);
 
     emit ready();
