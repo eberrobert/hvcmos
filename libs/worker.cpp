@@ -421,6 +421,7 @@ void Worker::FindLowestTh1(int pixel,bool flagSpare1)
     H35pixel.SetLd(false);
     H35pixel.SetAnaInj(pixel, true);
     H35pixel.SetHBEn(pixel, true);
+    gconf.SetSpare(1, spare);
     this->ConfigChip();
 
     int Injections = 128;
@@ -454,7 +455,6 @@ void Worker::FindLowestTh1(int pixel,bool flagSpare1)
         {
             if (follower)
             {
-
                 follower = false;
                 if (ThStep == 0.1)
                 {
@@ -517,7 +517,7 @@ void Worker::FindLowestTh1(int pixel,bool flagSpare1)
         blabla = "No Threshold found!";
     else
         blabla = "Best Threshold found: " + QString::fromStdString(counterstate1.str());
-
+        
     emit Logit(blabla);
 
     emit ready();
