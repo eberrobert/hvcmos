@@ -421,7 +421,6 @@ void Worker::FindLowestTh1(int pixel,bool flagSpare1)
     H35pixel.SetLd(false);
     H35pixel.SetAnaInj(pixel, true);
     H35pixel.SetHBEn(pixel, true);
-    gconf.SetSpare(1, spare);
     this->ConfigChip();
 
     int Injections = 128;
