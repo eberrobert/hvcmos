@@ -429,7 +429,7 @@ void Worker::FindLowestTh1(int pixel,bool flagSpare1)
     int Iterations = 0;
     int MaxIterations = 200;
     //double Threshold = 1.90;
-    double Threshold = 2.00;
+    double Threshold = 1.90;
     double bestTh = 0.0;
     bool notfound = true;
     bool follower = false;
