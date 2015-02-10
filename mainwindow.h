@@ -211,6 +211,8 @@ private slots:
 
     void on_FastClockDiv_valueChanged(int arg1);
 
+    void on_AutoDelay_clicked();
+
 public slots:
     void HandleResults(double x, double y);
     void UpdateSCurveProgress(int value);
@@ -241,7 +243,7 @@ signals:
     void EnableDigitalClock(bool enable);
     void SetDigPixClockDiv(int div);
     void SetDigPixDelay(int delay);
-    void FindLowestTh1(int pixel);
+    void FindLowestTh1(int pixel, bool flagSpare1);
 
 
 private:

@@ -19,7 +19,7 @@ class Worker : public QObject, public Funkcije, public Ke6485
     Q_OBJECT
     public:
         Worker();
-        Worker(GenioBase* genio, QextSerialPort* kecom, globalconfig gconf, pixelconfig H35pixel, PCBconfig pcbconf);
+        Worker(GenioBase* genio, QextSerialPort* kecom, globalconfig gconf, pixelconfig H35pixel, PCBconfig* pcbconf);
         ~Worker();
     public slots:
 
@@ -27,7 +27,7 @@ class Worker : public QObject, public Funkcije, public Ke6485
          * @brief FindLowestTh1 Ramps up or down Th1 in order to find the lowest possible threshold not in noise.
          * @param pixel is the pixel where to perform the action.
          */
-        void FindLowestTh1(int pixel);
+        void FindLowestTh1(int pixel, bool flagSpare1);
 
         /**
          * @brief SetDigPixClockdiv Sets the clock divider for the fast readout clock. The slow clock is 8 times slower.
@@ -207,7 +207,7 @@ class Worker : public QObject, public Funkcije, public Ke6485
         void readCOMData(int readings);
         pixelconfig H35pixel;
         globalconfig gconf;
-        PCBconfig pcbconf;
+        PCBconfig* pcbconf;
         GenioBase* genio;
         QextSerialPort* kecom;
         bool stop;

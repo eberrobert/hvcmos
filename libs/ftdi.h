@@ -4,7 +4,7 @@
 #define FTDI_H
 //#include "WinDef.h"
 //#include "windows.h"
-//#include "../../libs/ftd2xx.h"
+//#include "libs/ftd2xx.h"
 #if defined(__linux__)
 #include "WinTypes.h"
 #include "ftd2xx.h"
@@ -13,7 +13,7 @@
 #if defined(_WIN64)
     /* Microsoft Windows (64-bit). ------------------------------ */
 #include "windows.h"
-#include "../hvcmos_qt5/hvcmos_qt5/FTD2XX.H"
+#include "../FTD2XX.H"
 #elif defined(_WIN32)
     /* Microsoft Windows (32-bit). ------------------------------ */
 #include "windows.h"
