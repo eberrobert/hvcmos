@@ -7,6 +7,7 @@
 #include <sstream>
 #include <vector>
 #include <bitset>
+#include <string>
 
 #include <QTimer>
 #include <QThread>
@@ -38,6 +39,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    kecom = NULL; // initalize pointer
     ui->setupUi(this);
 
     // For the serial port, list all devices present.
@@ -218,7 +220,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //The worker thread
     QThread* thread = new QThread();
-    Worker* worker = new Worker(genio, kecom, gconf, H35pixel, pcbconfig);
+    Worker* worker = new Worker(genio, kecom, gconf, H35pixel, &pcbconfig);
     worker->moveToThread(thread);
 
     // Connection of Signals and Slots
@@ -250,7 +252,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this, SIGNAL(EnableDigitalClock(bool)), worker, SLOT(EnableDigitalClock(bool)));
     connect(this, SIGNAL(SetDigPixDelay(int)), worker, SLOT(SetDigPixDelay(int)));
     connect(this, SIGNAL(SetDigPixClockDiv(int)), worker, SLOT(SetDigPixClockdiv(int)));
-    connect(this, SIGNAL(FindLowestTh1(int)), worker, SLOT(FindLowestTh1(int)));
+    connect(this, SIGNAL(FindLowestTh1(int,bool)), worker, SLOT(FindLowestTh1(int,bool)));
     connect(worker, SIGNAL(Logit(QString)), this, SLOT(Logit(QString)));
 
     thread->start();
@@ -1629,7 +1631,8 @@ void MainWindow::on_FindlowestTh1_clicked()
 {
     // Implement function from Felix Ehrler here.
     int pixel = ui->TunePixSpin->value();
-    emit FindLowestTh1(pixel);
+    bool flagTDAC1 = gconf.GetSpare(1);
+    emit FindLowestTh1(pixel,flagTDAC1);
     std::stringstream logger;
     logger << "Ramping to lowest threshold for pixel " << pixel;
     logit(logger.str());
@@ -1692,4 +1695,94 @@ void MainWindow::on_AddressDelay_valueChanged(int arg1)
 void MainWindow::on_FastClockDiv_valueChanged(int arg1)
 {
      emit SetDigPixClockDiv(ui->FastClockDiv->value());
+}
+
+void MainWindow::on_AutoDelay_clicked()
+{
+    double TH1;
+    int delay = 0;
+    double avgdelay = 0.0;
+    int TWdownmax = 0;
+    Funkcije* funcc = new Funkcije(this->genio);
+    // Initialize Delay Measurement
+    TH1 = pcbconfig.GetTh1();
+    funcc->InitPatternDelayCount();
+
+    //File Output initalize
+    std::ofstream fileout;
+    std::ostringstream foutname;
+    foutname << "Pix_" << ui->PixelConfigSpin->value()<< "-TH1_" << TH1 << ".txt";
+    fileout.open(foutname.str().c_str());
+
+    std::cout << "Pixel: " << ui->PixelConfigSpin->value() << " TH1: " << TH1 << "\n";
+    fileout << "Pixel: " << ui->PixelConfigSpin->value() << " TH1: " << TH1 << "\n";
+    std::cout << "TW TWdown Injection Delay TH2\n";
+    fileout << "TW TWdown Injection Delay TH2\n";
+
+    std::ofstream avgfileout;
+    std::ostringstream avgfoutname;
+    avgfoutname << "AVG_Pix_" << ui->PixelConfigSpin->value()<< "-TH1_" << TH1 << ".txt";
+    avgfileout.open(avgfoutname.str().c_str());
+
+    std::cout << "Pixel: " << ui->PixelConfigSpin->value() << " TH1: " << TH1 << "\n";
+    avgfileout << "Pixel: " << ui->PixelConfigSpin->value() << " TH1: " << TH1 << "\n";
+    std::cout << "TW TWdown Injection AVGDelay TH2\n";
+    avgfileout << "TW TWdown Injection AVGDelay TH2\n";
+
+    for(int TW = 1; TW <=63; TW += 2) // TW Sweep
+    {
+        gconf.SetbDAC(1, TW);
+        TWdownmax = (TW * 3) + 5;
+        if(TWdownmax > 63)
+            TWdownmax = 63;
+        for(int TWdown = TW; TWdown <= TWdownmax; TWdown += 2)  // TWdown Sweep
+        {
+            gconf.SetbDAC(3, TWdown);
+            this->on_ConfigReg_clicked();
+
+            for (double injection = 0.2; injection <= 3.2; injection += 0.2)    //Injection Sweep
+            {
+                for (double th2 = 0.1; th2 <= 3.3; th2 += 0.1)        //TH2 Sweep
+                {
+                    funcc->Set3DACs(pcbconfig.GetTh1(), th2, injection );
+                    funcc->LoadDACPCB();
+                    avgdelay = 0.0;
+                    for (int i = 1; i <= 10; i++)
+                    {
+
+                        funcc->ResetPattern();
+                        funcc->ResetDelayCounter();
+                        funcc->StartDelayCounter();
+                        funcc->StartPattern();
+                        funcc->SendBuffer();
+                        // Read back delay count
+
+                        delay = funcc->ReadDelayCount(0);
+                        avgdelay = avgdelay + delay;
+                        /*int negdelay;
+                        negdelay = funcc->ReadDelayCount(1);
+
+                        int ndelay = 0;
+                        ndelay = funcc->ReadDelayCount(2);
+                        int nnegdelay = 0;
+                        nnegdelay = funcc->ReadDelayCount(3);*/
+
+                        std::cout << TW << " " << TWdown <<  " " << injection <<  " " << delay << " " << th2 << "\n";
+
+                        fileout << TW << " " << TWdown <<  " " << injection <<  " " << delay << " " << th2 << "\n";
+
+                    }
+                    avgdelay = avgdelay / 10;
+                    std::cout << TW << " " << TWdown <<  " " << injection <<  " " << avgdelay << " " << th2 << "\n";
+                    avgfileout << TW << " " << TWdown <<  " " << injection <<  " " << avgdelay << " " << th2 << "\n";
+
+
+                }
+            }
+        }
+    }
+    fileout.close();
+    avgfileout.close();
+    delete funcc;
+    this->ready();
 }

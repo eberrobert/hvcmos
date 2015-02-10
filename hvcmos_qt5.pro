@@ -38,6 +38,6 @@ HEADERS  += mainwindow.h \
 FORMS    += mainwindow.ui \
     about.ui
 
-LIBS += -LC:\Users\eber\Dropbox\hvcmos\hvcmos_qt5\hvcmos_qt5 -lftd2xx -LC:\root\include -LC:\root\lib -fopenmp
+LIBS += -L..\hvcmos -lftd2xx -LC:\root\include -LC:\root\lib -fopenmp
 QMAKE_CXXFLAGS += -pthread -IC:\root\include -I/usr/include/root -fopenmp -Wunused-parameter
 include(qextserialport-1.2rc/src/qextserialport.pri)

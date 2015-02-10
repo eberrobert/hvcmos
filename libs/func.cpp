@@ -1037,7 +1037,7 @@ unsigned int Funkcije::GetPixelAddress()
     for(int i=0; i<readings; i++)
     {
         //pixel1
-        genio->addpair(0x3E, 0x00, 1); // digpixdone is 1st bit. x0101011 are others to test.
+        genio->addpair(0x3E, 0x00, 1); // digpixdone is 1st bit. 0101011 are others to test.
         genio->addpair(0x3E, 0x01, 1 );
         genio->addpair(0x3E, 0x02, 1 );
         genio->addpair(0x3E, 0x03, 1 );
